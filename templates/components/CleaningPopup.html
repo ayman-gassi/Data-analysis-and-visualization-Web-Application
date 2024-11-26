@@ -1,0 +1,94 @@
+{% load static %}
+<div id="popupSection" class="hidden fixed z-10 inset-0 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
+        <div
+            class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <form method="post"> 
+            {% csrf_token %}
+            <div class="sm:flex sm:items-start">
+                <div
+                    class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-ruler"><path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        Cleaning NaN Values
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm leading-5 text-gray-700 mb-2">
+                            Your data Contain NaN values, would you like to clean it?
+                        </p>
+                        <label for="column" class="text-xs leading-5  text-gray-500">Select Column</label>
+                        <select class="p-2 text-gray-500 border w-full mt-2 mb-2" name="column" id="column" required>
+                            {% for column in columns_with_nan %}
+                                <option value="{{ column.column_name }}" data-type="{{ column.column_type }}">
+                                    {{ column.column_name }} - [ {{ column.column_type }} ]
+                                </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <div id="replacement-input" class="mt-1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
+                    <button type="submit"
+                        class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-green-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-green-500 focus:outline-none focus:shadow-outline-green transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+                        Accept
+                    </button>
+                </span>
+                <span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+                    <button type="button" id="closePopupButton"
+                        class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+                        Cancel
+                    </button>
+                </span>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    const columnSelect = document.getElementById("column");
+    const replacementInputDiv = document.getElementById("replacement-input");
+    function updateReplacementInput() {
+        const selectedOption = columnSelect.options[columnSelect.selectedIndex];
+        const columnType = selectedOption.getAttribute("data-type");
+        replacementInputDiv.innerHTML = "";
+        let inputElement;
+        if (columnType === "string" || columnType === "other") {
+            inputElement = document.createElement("input");
+            inputElement.type = "text";
+            inputElement.placeholder = "Enter text";
+        } else if (columnType === "number") {
+            inputElement = document.createElement("input");
+            inputElement.type = "number";
+            inputElement.placeholder = "Enter a number";
+        } else if (columnType === "boolean") {
+            inputElement = document.createElement("select");
+            const trueOption = document.createElement("option");
+            trueOption.value = "true";
+            trueOption.textContent = "True";
+            const falseOption = document.createElement("option");
+            falseOption.value = "false";
+            falseOption.textContent = "False";
+            inputElement.appendChild(trueOption);
+            inputElement.appendChild(falseOption);
+        }
+        if (inputElement) {
+            inputElement.className = "w-full p-2 border";
+            inputElement.name = "replacement_value";
+            inputElement.id = "replacement_value";
+            inputElement.required = true;
+            replacementInputDiv.appendChild(inputElement);
+        }
+    }
+    columnSelect.addEventListener("change", updateReplacementInput);
+    document.addEventListener("DOMContentLoaded", updateReplacementInput);
+</script>

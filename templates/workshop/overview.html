@@ -1,0 +1,166 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
+    <title>CortexWorkshop | Workshop</title>
+</head>
+<body class="bg-gray-100">
+    {% include "components/sidebar.html" %}
+    <div class="ml-20 p-5 h-screen overflow-y-auto">
+        <div class="flex justify-between items-center" >
+            <h1 class="text-2xl font-semibold text-gray-800">Data Overview</h1>
+            {% if columns_with_nan %}
+                <button class="p-2  bg-green-500 hover:bg-green-600 rounded-md text-white flex justify-center items-center"  id="openPopupButton">
+                    <svg xmlns="http://www.w3.org/2000/svg"class=" w-5 h-5 mr-2"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-ruler"><path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                    Cleaning NaN Values
+                </button>
+            {% endif %} 
+        </div>
+        {% if page_obj %}
+            <div class="overflow-x-auto shadow-lg bg-white rounded-lg mt-6">
+                <table class="min-w-full table-auto text-sm">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-700">
+                            {% for header in page_obj.object_list.0.keys %}
+                                <th class="py-3 px-4 text-left">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in page_obj.object_list %}
+                            <tr class="border-b hover:bg-gray-100">
+                                {% for value in row.values %}
+                                    <td class="py-3 px-4">{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6">
+                <nav class="flex justify-between items-center">
+                    <span class="text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                    <div class="flex space-x-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1" class="px-4 py-2 bg-gray-200 rounded-md">First</a>
+                            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-gray-200 rounded-md">Previous</a>
+                        {% else %}
+                            <span class="px-4 py-2 bg-gray-100 rounded-md text-gray-400">First</span>
+                            <span class="px-4 py-2 bg-gray-100 rounded-md text-gray-400">Previous</span>
+                        {% endif %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-gray-200 rounded-md">Next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 bg-gray-200 rounded-md">Last</a>
+                        {% else %}
+                            <span class="px-4 py-2 bg-gray-100 rounded-md text-gray-400">Next</span>
+                            <span class="px-4 py-2 bg-gray-100 rounded-md text-gray-400">Last</span>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+            {% if columns_with_nan|length == 0 %}
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 ">
+                    <div x-data="{ open: false }">
+                      <div x-show="open" class="fixed inset-0 z-50 overflow-hidden">
+                        <div x-show="open" x-transition:enter="transition-opacity ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-in duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                        <section class="absolute inset-y-0 right-0 pl-10 max-w-full flex">
+                          <div x-show="open" x-transition:enter="transition-transform ease-out duration-300" x-transition:enter-start="transform translate-x-full" x-transition:enter-end="transform translate-x-0" x-transition:leave="transition-transform ease-in duration-300" x-transition:leave-start="transform translate-x-0" x-transition:leave-end="transform translate-x-full" class="w-screen max-w-md">
+                            <div class="h-full flex flex-col py-6 bg-white shadow-xl">
+                              <div class="flex items-center justify-between px-4">
+                                <h2 class="text-xl font-semibold text-black">Search</h2>
+                                <button x-on:click="open = false" class="text-gray-500 hover:text-gray-700">
+                                  <span class="sr-only">Close</span>
+                                  <svg class="h-6 w-6" x-description="Heroicon name: x" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                  </svg>
+                                </button>
+                              </div>
+                              <div class="mt-4 px-4">
+                                <input type="text" placeholder="Search Tool Here" class="w-full p-2 border border-gray-300 rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
+                              </div>
+                              <div class="mt-4 px-4">
+                                <p class="ml-2 text-gray-400">Results</p>
+                              </div>
+                              <div class="mt-4 px-4 h-full overflow-auto">
+                                <div id="tools-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {% for tool in tools %}
+                                    <form method="POST" action="{% url 'calculate_tool' %}" class="inline-block">
+                                        {% csrf_token %}
+                                        <div class="bg-gray-50 hover:bg-gray-100 p-4 rounded-md border border-gray-300 transition-colors duration-300">
+                                            <input 
+                                                type="text" 
+                                                id="tool_{{ forloop.counter }}" 
+                                                name="tool" 
+                                                value="{{ tool.name }}" 
+                                                class="hidden" 
+                                            >
+                                
+                                            <label for="tool_{{ forloop.counter }}" class="w-full cursor-pointer">
+                                                <h3 class="text-lg font-semibold text-black mb-2">{{ tool.name }}</h3>
+                                                <p class="text-gray-600">{{ tool.description }}</p>
+                                            </label>
+                                
+                                            {% if tool.name in tools_requiring_columns %}
+                                                <label for="column_{{ forloop.counter }}" class="text-xs leading-5 text-gray-500">Select Column</label>
+                                                <select 
+                                                    class="p-2 text-gray-500 border w-full mt-2 mb-2" 
+                                                    name="column" 
+                                                    id="column_{{ forloop.counter }}" 
+                                                    required
+                                                >
+                                                    {% for column in column_names %}
+                                                        <option value="{{ column }}" data-type="{{ column }}">
+                                                          {{ column }} 
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% endif %}
+                                
+                                            <button type="submit" class="mt-4 px-6 py-2 bg-green-500 text-white rounded-md w-full">Calculate</button>
+                                        </div>
+                                    </form>
+                                {% endfor %}
+                                
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                      <button   x-on:click="open = true" class=" w-64 h-28 bg-gray-200 hover:bg-gray-300 cursor-pointer p-2 border rounded-xl flex justify-center items-center">
+                        <div class="flex flex-col justify-center items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-badge-plus">
+                                <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+                                <line x1="12" x2="12" y1="8" y2="16"/>
+                                <line x1="8" x2="16" y1="12" y2="12"/>
+                            </svg>
+                            <span >Generate</span>
+                        </div>
+                      </button>
+                    </div>
+                    {% for data in results %}
+                    <div class="min-h-28 min-w-[200px] sm:min-w-[300px] md:min-w-[400px] bg-gray-50 p-4 rounded-md border border-gray-300">
+                        <h3 class="text-lg font-semibold text-black mb-2">{{ data.tool }}</h3>
+                        <p class="text-gray-600 break-words">
+                            {{ data.result }}
+                        </p>
+                    </div>
+                    
+                    {% endfor %} 
+            </div>  
+            {% endif %}          
+        {% else %}
+            <p class="text-gray-600 mt-6">No data available to display.</p>
+        {% endif %}
+    </div>
+
+    {% include "components/CleaningPopup.html" %}
+    <script src="{% static 'js/overview.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
+    <title>CortexWorkshop | Console </title>
+</head>
+<body class="bg-gray-100">
+    {% include "components/sidebar.html" %}
+    <div class="ml-20 p-5 h-screen overflow-y-auto">
+        <div class="flex justify-between items-center" >
+            <h1 class="text-2xl font-semibold text-gray-800">Console</h1>
+        </div>
+
+<div class="console-container mt-6">
+    <form method="POST" class="mb-6">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="command" class="block text-sm text-gray-700">Enter your command:</label>
+            <textarea name="command" id="command" class="w-full p-2 border rounded-md" rows="6" placeholder="e.g., df['column_name'].mean()"></textarea>
+        </div>
+        <button type="submit" class="px-6 py-2 bg-green-500 text-white rounded-md">Execute Command</button>
+    </form>
+
+    {% if result %}
+        <div class="mt-6 bg-white p-4 rounded-md border border-gray-300">
+            <h3 class="text-lg font-semibold text-gray-800">Command Output</h3>
+            <div class="mt-4">
+                {{ result|safe }}
+            </div>
+        </div>
+    {% endif %}
+    
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+</body>
+</html>

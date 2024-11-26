@@ -1,0 +1,55 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
+    <title>DataCortex | Home</title>
+</head>
+<body>
+    {% include "components/navbar.html" %}
+    <div class="relative flex flex-col items-center max-w-screen-xl px-2 mx-auto md:flex-row sm:px-4 p-2 w-full mt-5">
+        <form method="post" enctype="multipart/form-data" class="flex flex-col items-center justify-center py-5 w-full md:w-1/2 p-8">
+            {% csrf_token %}
+            <label for="uploadFile1" class="bg-white text-gray-500 font-semibold text-base rounded w-full h-80 flex flex-col items-center justify-center cursor-pointer border-2 border-gray-300 border-dashed mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-11 mb-2 fill-green-500" viewBox="0 0 32 32">
+                    <path d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z" />
+                    <path d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z" />
+                </svg>
+                Upload file
+                <input type="file" id="uploadFile1" name="file" class="hidden" onchange="displayFileInfo()" />
+                <p class="text-xs font-medium text-gray-400 mt-2">XLS, CSV are Allowed.</p>
+            </label>
+            {% if form.file.errors %}
+                <p id="erroDesc" class="text-red-500 text-sm mt-2">{{ form.file.errors.0 }}</p>
+            {% endif %}
+            <div id="fileInfo" class="text-center mt-2 text-gray-600 text-sm">  </div>
+        
+            <button type="submit" class="mt-4 bg-green-500 text-white font-semibold py-2 px-4 rounded">
+                Submit
+            </button>
+        </form>
+        <div class="flex items-center justify-center py-5 w-full md:w-1/2 p-10">
+            <div class="relative w-full p-3 rounded md:p-8">
+                <div class="rounded-lg flex justify-center items-center bg-white w-full">
+                    <img class="w-60" src="{% static 'images/robot.gif' %}" alt="image">
+                </div>
+                <div class="text-left mt-1">
+                    <h2 class="text-4xl font-extrabold leading-10 tracking-tight text-gray-800 sm:text-5xl sm:leading-none md:text-6xl">
+                        Data
+                        <span class="font-bold text-green-500">Cortex</span>
+                        <span class="text-xl font-semibold rounded-full text-blueGray-500">Beta</span>
+                    </h2>
+                    <p class="max-w-md mx-auto mt-3 text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                        Easily upload your files, visualize complex data, and discover actionable insights using advanced powered analysis and machine learning techniques.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "components/footer.html" %}
+    <script src="{% static 'js/fileInfo.js' %}"></script>
+</body>
+</html>
