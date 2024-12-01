@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
+    <link rel="stylesheet" href="{% static 'style/analyse.css' %}">
     <title>CortexWorkshop | data_analyze </title>
 </head>
 <body class="bg-gray-100">
@@ -37,9 +38,168 @@
                         <p class="ml-2 text-gray-400">Results</p>
                       </div>
                       <div class="mt-4 px-4 h-full overflow-auto">
-
-                    </div>
-                    </div>
+                        <div id="matplotlib-label" class="p-2 cursor-pointer bg-green-500 border rounded-md mt-1 mb-1">
+                          <div class="flex justify-between items-center">
+                              <p class="text-lg font-semibold text-white">Matplotlib</p>
+                              <svg id="matplotlib-arrow" class="text-white transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <polyline points="10 15 15 20 20 15"/>
+                                  <path d="M4 4h7a4 4 0 0 1 4 4v12"/>
+                              </svg>
+                          </div>
+                          <p class="text-gray-100 text-sm">Matplotlib is a comprehensive library for creating static, animated, and interactive plots.</p>
+                        </div>
+                        <div id="matplotlib-tools-container" class="grid grid-cols-1 gap-4 hidden">
+                            {% for tool in tools.Matplotlib %}
+                            <form method="POST" action="{% url 'plot_tool' %}" class="inline-block">
+                                {% csrf_token %}
+                                <div class="bg-gray-50 hover:bg-gray-100 p-2 rounded-md border border-gray-300 transition-colors duration-300">
+                                    <input type="text" id="tool_{{ forloop.counter }}" name="tool" value="{{ tool.tool }}" class="hidden">
+                                    <label for="tool_{{ forloop.counter }}" class="w-full">
+                                        <div class="flex justify-between">
+                                            <p class="text-lg font-semibold text-black">{{ tool.tool }}</p>
+                                            <button class="text-green-500 hover:text-green-600 flex items-center justify-center" type="submit">
+                                                Generate
+                                                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                                    <path d="M21 3v5h-5"/>
+                                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                                    <path d="M8 16H3v5"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <p class="text-gray-600 text-sm">{{ tool.description }}</p>
+                                    </label>
+                                          {% for _ in ''|center:tool.num_variables %}
+                                                  <label for="column_{{ forloop.counter }}" class="mt- 2 text-xs leading-5 text-gray-500">Select Column {{forloop.counter}}</label>
+                                                  <select 
+                                                      class="p-2 text-gray-500 border w-full mt-2 mb-2" 
+                                                      name="column_{{ forloop.counter }}" 
+                                                      id="column_{{ forloop.counter }}" 
+                                                      required
+                                                  >
+                                                  {% if tool.data_type == 'numeric' %}
+                                                      {% for column in numeric_columns %}
+                                                          <option value="{{ column }}" data-type="{{ column }}">
+                                                            {{ column }} 
+                                                          </option>
+                                                      {% endfor %}
+                                                    {% elif tool.data_type == 'categorical' %}
+                                                      {% for column in string_columns %}
+                                                          <option value="{{ column }}" data-type="{{ column }}">
+                                                            {{ column }} 
+                                                          </option>
+                                                      {% endfor %}
+                                                  {% endif %}
+                                                  </select>
+                                          {% endfor %}
+                                </div>
+                            </form>
+                            {% endfor %}
+                        </div>
+                        <div id="seaborn-label" class="p-2 cursor-pointer bg-green-500 border rounded-md mt-1 mb-1">
+                          <div class="flex justify-between items-center">
+                              <p class="text-lg font-semibold text-white">Seaborn</p>
+                              <svg id="seaborn-arrow" class="text-white transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                  <polyline points="10 15 15 20 20 15"/>
+                                  <path d="M4 4h7a4 4 0 0 1 4 4v12"/>
+                              </svg>
+                          </div>
+                          <p class="text-gray-100 text-sm">Seaborn is a Python data visualization library based on matplotlib.</p>
+                        </div>
+                        <div id="seaborn-tools-container" class="grid grid-cols-1 gap-4 hidden">
+                          {% for tool in tools.Seaborn %}
+                            {% if string_columns|length == 0 %}
+                              {% if tool.data_type == 'categorical' or tool.data_type == 'numeric and categorical' %}
+                                <div class="bg-gray-50 hover:bg-gray-100 p-2 rounded-md border border-gray-300 transition-colors duration-300">
+                                  <label for="tool_{{ forloop.counter }}" class="w-full">
+                                    <div class="flex justify-between">
+                                      <p class="text-lg font-semibold text-black">{{ tool.tool }}</p>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">{{ tool.description }}</p>
+                                  </label>
+                                </div>
+                              {% endif %}
+                             {% endif %}
+                            {% if string_columns|length > 0 and tool.data_type == 'numeric and categorical' %}
+                              <form method="POST" action="{% url 'plot_tool' %}" class="inline-block">
+                                {% csrf_token %}
+                                <div class="bg-gray-50 hover:bg-gray-100 p-2 rounded-md border border-gray-300 transition-colors duration-300">
+                                  <input type="text" id="tool_{{ forloop.counter }}" name="tool" value="{{ tool.tool }}" class="hidden">
+                                  <label for="tool_{{ forloop.counter }}" class="w-full">
+                                    <div class="flex justify-between">
+                                      <p class="text-lg font-semibold text-black">{{ tool.tool }}</p>
+                                      <button class="text-green-500 hover:text-green-600 flex items-center justify-center" type="submit">
+                                        Generate
+                                        <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                          <path d="M21 3v5h-5"/>
+                                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                          <path d="M8 16H3v5"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">{{ tool.description }}</p>
+                                  </label>
+                        
+                                  <label for="column_1" class="mt-2 text-xs leading-5 text-gray-500">Select Column 1</label>
+                                  <select class="p-2 text-gray-500 border w-full mt-2 mb-2" name="column_1" id="column_1" required>
+                                    {% for column in numeric_columns %}
+                                      <option value="{{ column }}" data-type="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                  </select>
+                        
+                                  <label for="column_2" class="mt-2 text-xs leading-5 text-gray-500">Select Column 2</label>
+                                  <select class="p-2 text-gray-500 border w-full mt-2 mb-2" name="column_2" id="column_2" required>
+                                    {% for column in string_columns %}
+                                      <option value="{{ column }}" data-type="{{ column }}">{{ column }}</option>
+                                    {% endfor %}
+                                  </select>
+                                </div>
+                              </form>
+                            {% endif %}
+                            {% if tool.data_type == 'numeric' %}
+                              <form method="POST" action="{% url 'plot_tool' %}" class="inline-block">
+                                {% csrf_token %}
+                                <div class="bg-gray-50 hover:bg-gray-100 p-2 rounded-md border border-gray-300 transition-colors duration-300">
+                                  <input type="text" id="tool_{{ forloop.counter }}" name="tool" value="{{ tool.tool }}" class="hidden">
+                                  <label for="tool_{{ forloop.counter }}" class="w-full">
+                                    <div class="flex justify-between">
+                                      <p class="text-lg font-semibold text-black">{{ tool.tool }}</p>
+                                      <button class="text-green-500 hover:text-green-600 flex items-center justify-center" type="submit">
+                                        Generate
+                                        <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                          <path d="M21 3v5h-5"/>
+                                          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                          <path d="M8 16H3v5"/>
+                                        </svg>
+                                      </button>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">{{ tool.description }}</p>
+                                  </label>
+                        
+                                  {% for _ in ''|center:tool.num_variables %}
+                                    <label for="column_{{ forloop.counter }}" class="mt-2 text-xs leading-5 text-gray-500">Select Column {{ forloop.counter }}</label>
+                                    <select class="p-2 text-gray-500 border w-full mt-2 mb-2" name="column_{{ forloop.counter }}" id="column_{{ forloop.counter }}" required>
+                                      {% if tool.data_type == 'numeric' %}
+                                        {% for column in numeric_columns %}
+                                          <option value="{{ column }}" data-type="{{ column }}">{{ column }}</option>
+                                        {% endfor %}
+                                      {% elif tool.data_type == 'categorical' %}
+                                        {% for column in string_columns %}
+                                          <option value="{{ column }}" data-type="{{ column }}">{{ column }}</option>
+                                        {% endfor %}
+                                      {% endif %}
+                                    </select>
+                                  {% endfor %}
+                                </div>
+                              </form>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                        
+                       </div>
+                      </div>
                   </div>
                 </section>
               </div>
@@ -57,17 +217,53 @@
             {% if plot_images %}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for plot_image in plot_images %}
-          <div class="plot-item">
-            <img src="{{ plot_image }}" alt="Generated Plot" class="w-full h-auto"/>
-            <p class="text-center text-sm">Plot</p>
-          </div>
+        <div class="plot-item">
+            <img src="data:image/png;base64,{{ plot_image.plot }}" class="w-full h-auto" alt="Plot for {{ plot_image.tool }}">
+            <div class="flex justify-between items-center pl-2 pr-2 mt-2">
+                <p class="text-sm flex items-center"><p>{{ plot_image.tool }}</p>
+                   {% for column in plot_image.columns %}
+                      {% if column %}
+                          <p class="text-xs">[ {{ column }} ]</p>
+                      {% endif %}
+                  {% endfor %}
+                </p>
+                <div class="flex">
+                  <form method="POST" action="{% url 'download_plot' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="plot_index" value="{{ forloop.counter0 }}">
+                    <button  class="flex justify-center items-center text-xs ml-14 bg-green-500 text-white p-1 rounded-md">
+                      Download
+                      <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                      </svg>
+                    </button>
+                  </form>
+                    <form method="POST" action="{% url 'delete_plot' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plot_index" value="{{ forloop.counter0 }}">
+                        <button type="submit" class="flex justify-center items-center text-xs ml-2 bg-red-500 text-white p-1 rounded-md">
+                            Delete
+                            <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endfor %}
+        
       </div>
     {% else %}
       <p>No plots available.</p>
     {% endif %}
     </div>
     </div>
+    <script src="{% static 'js/analyse.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 </body>
 </html>

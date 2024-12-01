@@ -21,9 +21,15 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('about', views.about, name='about'),
     path('overview/', views.overview , name='overview'),
     path('logout/', views.logout, name='logout'),
     path('calculate_tool/', views.calculate_tool, name='calculate_tool'),
+    path('plot_tool/', views.plot_tool, name='plot_tool'),
     path('data_analyze/', views.data_analyze, name='data_analyze'),
     path('console/', views.console, name='console'),
+    path('delete_plot', views.delete_plot, name='delete_plot'),
+    path('download_plot', views.download_plot, name='download_plot'),
+    path('delete_calcul', views.delete_calcul, name='delete_calcul'),
+
 ]

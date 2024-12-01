@@ -1,0 +1,43 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
+    <title>DataCortex | About</title>
+</head>
+<body>
+    {% include "components/navbar.html" %}
+    <div class="relative flex flex-col items-center max-w-screen-xl px-2 mx-auto md:flex-row sm:px-4 p-2 w-full mt-5">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">About DataCortex</h2>
+                <p class="text-lg text-gray-600">DataCortex is a powerful data analysis tool built to make working with data simple and efficient. With support for CSV and Excel files, users can perform complex calculations, generate insights, and visualize data with ease.</p>
+            </div>
+        
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="flex flex-col justify-center items-center text-justify">
+                    <h3 class="text-2xl font-semibold text-gray-700 mb-4">How It Works</h3>
+                    <p class="text-gray-600 mb-4">DataCortex allows users to upload CSV or Excel files for analysis. Once uploaded, users can apply various statistical functions like sum, median, mean, and more to gain valuable insights. Additionally, users can generate plots from the data, visualizing trends, distributions, and correlations.</p>
+                    <p class="text-gray-600 mb-4">The tool is intuitive and easy to use, designed for both beginners and experienced data analysts. With just a few clicks, users can analyze their data and visualize results in interactive plots.</p>
+                </div>
+        
+                <div class="flex flex-col justify-center items-center text-justify">
+                    <h3 class="text-2xl font-semibold text-gray-700 mb-4">Key Features</h3>
+                    <ul class="list-disc list-inside text-gray-600 mb-4">
+                        <li>Upload and analyze CSV or Excel files with ease</li>
+                        <li>Perform various statistical operations (sum, median, mean, etc.)</li>
+                        <li>Generate interactive plots for visual data insights</li>
+                        <li>Download high-quality plots as PNG images</li>
+                        <li>Simple, user-friendly interface </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+</body>
+</html>
