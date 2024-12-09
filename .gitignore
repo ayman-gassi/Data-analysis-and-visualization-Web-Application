@@ -1,0 +1,62 @@
+# Byte-compiled / optimized / DLL files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Django migrations
+*/migrations/*
+
+# Database files
+*.sqlite3
+
+# Media files
+/media/
+
+# Static files
+/static/
+
+# Environment files
+.env
+*.env
+
+# Virtual environment
+venv/
+env/
+
+# IDE configurations
+.vscode/
+.idea/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*~
+
+# Coverage reports
+.coverage
+*.cover
+.hypothesis/
+
+# pytest cache
+.pytest_cache/
+
+# Node.js files (if any frontend tools are used)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+
+# JetBrains IDEs
+*.iml
+.idea/
