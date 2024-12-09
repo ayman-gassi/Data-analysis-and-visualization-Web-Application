@@ -155,29 +155,76 @@ def calculate_tool(request):
                 elif tool_name == "Min":
                     result = column_data.min()
                 elif tool_name == "Sum":
-                    result = column_data.sum()
-               
-            else:
-                if tool_name == "Covariance":
-                    result = data.cov().to_dict()
-                elif tool_name == "Correlation":
-                    result = data.corr().to_dict()
-                elif tool_name == "Count":
-                    result = column_data.count()
-                else:
-                    messages.error(request, "Invalid tool selected.")
+                    result = column_data.sum()   
+            
+            elif tool_name == "Covariance":
+                try:
+                    print(f"Tool Name Received: {tool_name}")
+                    numeric_data = data.select_dtypes(include=[np.number])
+                    if numeric_data.shape[1] < 2:
+                        raise ValueError("Covariance requires at least two numeric columns.")
+                    print("Numeric Data for Covariance:\n", numeric_data.head())  # Debug
+                    
+                    result = numeric_data.cov()
+                    print("Covariance Matrix Before HTML Conversion:\n", result)  # Debug
+
+                    result = result.to_html(classes="min-w-full border-collapse border border-gray-300 text-left text-sm bg-white")
+                    print("Covariance Matrix HTML:\n", result)  # Debug
+                except Exception as e:
+                    messages.error(request, f"Error generating covariance matrix: {e}")
+                    return redirect('overview')
+                
+            elif tool_name == "Correlation":
+                try:
+                    # Check if there are numeric columns in the data
+                    numeric_data = data.select_dtypes(include=[np.number])
+                    if numeric_data.shape[1] < 2:
+                        raise ValueError("Correlation requires at least two numeric columns.")
+                    
+                    # Compute the correlation matrix
+                    result = numeric_data.corr()
+                    print("Correlation Matrix:\n", result)  # Debugging output
+                    
+                    # Convert the matrix to an HTML table with Tailwind CSS classes
+                    result = result.to_html(classes="min-w-full border-collapse border border-gray-300 text-left text-sm bg-white")
+                except Exception as e:
+                    messages.error(request, f"Error generating correlation matrix: {e}")
                     return redirect('overview')
 
+
+            elif tool_name == "Count":
+                if not selected_column or selected_column not in data.columns:
+                    messages.error(request, "Invalid or no column selected for Count.")
+                    return redirect('overview')
+                try:
+                    result = int(data[selected_column].count())
+                except Exception as e:
+                    messages.error(request, f"Error calculating count: {e}")
+                    return redirect('overview')
+
+            else:
+                messages.error(request, "Invalid tool selected.")
+                return redirect('overview')                
+
+
+
             session_results = request.session.get('calculation_results', [])
+            
             session_results.append({
                 "tool": tool_name,
-                "column": selected_column if selected_column else "All Columns",
-                "result": float(result) if isinstance(result, (np.float64, np.float32)) else 
-                        int(result) if isinstance(result, (np.int64, np.int32)) else result,
+                "column": selected_column if selected_column else "All Columns",  # Covariance applies to all numeric columns
+                "result": result,
             })
+            print("Session Results After Append:\n", session_results)  # Debug
+
             session_results = session_results[::-1]
             request.session['calculation_results'] = session_results
             request.session.modified = True
+            #debbug
+            print(f"Calculation Result for {tool_name}: {result}")
+            #debbug
+            print("Session Results:\n", request.session.get('calculation_results', []))
+
 
             messages.success(request, f"Result for '{tool_name}' has been calculated and stored.")
             return redirect('overview')

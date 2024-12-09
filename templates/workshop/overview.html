@@ -146,25 +146,33 @@
                     {% for data in results %}
                     <div class="min-h-28 min-w-[200px] sm:min-w-[300px] md:min-w-[400px] bg-gray-50 p-4 rounded-md border border-gray-300">
                         <div class="flex justify-between items-center mb-2"> 
-                            <p class="text-lg font-semibold text-black" > {{ data.tool }}</p>
-                             <form method="POST" action="{% url 'delete_calcul' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="calcul_index" value="{{ forloop.counter0 }}">
-                            <button type="submit" class="flex justify-center items-center text-xs ml-14 bg-red-500 text-white p-1 rounded-md">
-                                Delete
-                                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                </svg>
-                            </button>
-                        </form></div>
-                        <p class="text-gray-600 break-words">
-                            {{ data.result }}
-                        </p>
+                            <p class="text-lg font-semibold text-black">{{ data.tool }}</p>
+                            <form method="POST" action="{% url 'delete_calcul' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="calcul_index" value="{{ forloop.counter0 }}">
+                                <button type="submit" class="flex justify-center items-center text-xs bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600">
+                                    Delete
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18M9 6v12m6-12v12M4 6l1.293 13.293A1 1 0 005.293 20h13.414a1 1 0 00.993-.707L20 6" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="overflow-x-auto">
+                            {% if data.tool == "Covariance" or data.tool == "Correlation" %}
+                                <div class="rounded-md shadow border border-gray-300">
+                                    <table class="min-w-full border-collapse table-auto text-sm">
+                                        <!-- Render HTML table data -->
+                                        {{ data.result|safe }}
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-600 break-words">{{ data.result }}</p>
+                            {% endif %}
+                        </div>
                     </div>
-                    
-                    {% endfor %} 
+                    {% endfor %}
+ 
             </div>  
             {% endif %}          
         {% else %}
