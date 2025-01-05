@@ -30,6 +30,8 @@ urlpatterns = [
     path('console/', views.console, name='console'),
     path('delete_plot', views.delete_plot, name='delete_plot'),
     path('download_plot', views.download_plot, name='download_plot'),
+    path('probability/', views.probability , name='probability'),
+    path('probability/<str:title>/', views.probability_detail, name='probability_detail'),
+    path('apply_distribution/<str:title>/', views.apply_distribution, name='apply_distribution'),
     path('delete_calcul', views.delete_calcul, name='delete_calcul'),
-
 ]

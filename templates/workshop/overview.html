@@ -13,12 +13,20 @@
     <div class="ml-20 p-5 h-screen overflow-y-auto">
         <div class="flex justify-between items-center" >
             <h1 class="text-2xl font-semibold text-gray-800">Data Overview</h1>
-            {% if columns_with_nan %}
-                <button class="p-2  bg-green-500 hover:bg-green-600 rounded-md text-white flex justify-center items-center"  id="openPopupButton">
-                    <svg xmlns="http://www.w3.org/2000/svg"class=" w-5 h-5 mr-2"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-ruler"><path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
-                    Cleaning NaN Values
-                </button>
-            {% endif %} 
+            <div class="flex justify-center items-center" >
+                {% if columns_with_nan %}
+                    <button class="p-2  bg-green-500 hover:bg-green-600 rounded-md text-white flex justify-center items-center"  id="openPopupButton">
+                        <svg xmlns="http://www.w3.org/2000/svg"class=" w-5 h-5 mr-2"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-ruler"><path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                        Cleaning NaN Values
+                    </button>
+                {% endif %} 
+                {% if columns_with_nan|length == 0 %}
+                    <button class="p-2 ml-2 bg-green-500 hover:bg-green-600 rounded-md text-white flex justify-center items-center"  id="openColumnPopup">
+                        <svg xmlns="http://www.w3.org/2000/svg"class=" w-5 h-5 mr-2"   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid-2x2-plus"><path d="M12 3v17a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1H3"/><path d="M16 19h6"/><path d="M19 22v-6"/></svg>
+                        Add Column
+                    </button>
+                {% endif %} 
+             </div>
         </div>
         {% if page_obj %}
             <div class="overflow-x-auto shadow-lg bg-white rounded-lg mt-6">
@@ -81,7 +89,7 @@
                                 </button>
                               </div>
                               <div class="mt-4 px-4">
-                                <input type="text" placeholder="Search Tool Here" class="w-full p-2 border border-gray-300 rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
+                                <input  id="search-tool" type="text" placeholder="Search Tool Here" class="w-full p-2 border border-gray-300 rounded-md focus:border-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 transition-colors duration-300">
                               </div>
                               <div class="mt-4 px-4">
                                 <p class="ml-2 text-gray-400">Results</p>
@@ -89,7 +97,7 @@
                               <div class="mt-4 px-4 h-full overflow-auto">
                                 <div id="tools-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {% for tool in tools %}
-                                    <form method="POST" action="{% url 'calculate_tool' %}" class="inline-block">
+                                    <form  method="POST" action="{% url 'calculate_tool' %}" data-tool={{ tool.name }} class="tool-item inline-block">
                                         {% csrf_token %}
                                         <div class="bg-gray-50 hover:bg-gray-100 p-4 rounded-md border border-gray-300 transition-colors duration-300">
                                             <input 
@@ -120,12 +128,38 @@
                                                     {% endfor %}
                                                 </select>
                                             {% endif %}
-                                
+                                            {% if tool.name in tools_requiring_two_columns %}
+                                                <label for="column_{{ forloop.counter }}" class="text-xs leading-5 text-gray-500">Select Column 1</label>
+                                                <select 
+                                                    class="p-2 text-gray-500 border w-full mt-2 mb-2" 
+                                                    name="column" 
+                                                    id="column_{{ forloop.counter }}" 
+                                                    required
+                                                >
+                                                    {% for column in column_names %}
+                                                        <option value="{{ column }}" data-type="{{ column }}">
+                                                          {{ column }} 
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="column_{{ forloop.counter }}" class="text-xs leading-5 text-gray-500">Select Column 2</label>
+                                                <select 
+                                                    class="p-2 text-gray-500 border w-full mt-2 mb-2" 
+                                                    name="secondColumn" 
+                                                    id="column_{{ forloop.counter }}" 
+                                                    required
+                                                >
+                                                    {% for column in column_names %}
+                                                        <option value="{{ column }}" data-type="{{ column }}">
+                                                          {{ column }} 
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            {% endif %}
                                             <button type="submit" class="mt-4 px-6 py-2 bg-green-500 text-white rounded-md w-full">Calculate</button>
                                         </div>
                                     </form>
                                     {% endfor %}
-                                
                                 </div>
                               </div>
                             </div>
@@ -146,33 +180,25 @@
                     {% for data in results %}
                     <div class="min-h-28 min-w-[200px] sm:min-w-[300px] md:min-w-[400px] bg-gray-50 p-4 rounded-md border border-gray-300">
                         <div class="flex justify-between items-center mb-2"> 
-                            <p class="text-lg font-semibold text-black">{{ data.tool }}</p>
-                            <form method="POST" action="{% url 'delete_calcul' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="calcul_index" value="{{ forloop.counter0 }}">
-                                <button type="submit" class="flex justify-center items-center text-xs bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600">
-                                    Delete
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M3 6h18M9 6v12m6-12v12M4 6l1.293 13.293A1 1 0 005.293 20h13.414a1 1 0 00.993-.707L20 6" />
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="overflow-x-auto">
-                            {% if data.tool == "Covariance" or data.tool == "Correlation" %}
-                                <div class="rounded-md shadow border border-gray-300">
-                                    <table class="min-w-full border-collapse table-auto text-sm">
-                                        <!-- Render HTML table data -->
-                                        {{ data.result|safe }}
-                                    </table>
-                                </div>
-                            {% else %}
-                                <p class="text-gray-600 break-words">{{ data.result }}</p>
-                            {% endif %}
-                        </div>
+                            <p class="text-lg font-semibold text-black" > {{ data.tool }} <label class="text-xs text-green-500"  >{{ data.column }}</label> </p>
+                             <form method="POST" action="{% url 'delete_calcul' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="calcul_index" value="{{ forloop.counter0 }}">
+                            <button type="submit" class="flex justify-center items-center text-xs ml-14 bg-red-500 text-white p-1 rounded-md">
+                                Delete
+                                <svg class="ml-1" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                </svg>
+                            </button>
+                        </form></div>
+                        <p class="text-gray-600 break-words">
+                            {{ data.result }}
+                        </p>
                     </div>
-                    {% endfor %}
- 
+                    
+                    {% endfor %} 
             </div>  
             {% endif %}          
         {% else %}
@@ -181,6 +207,7 @@
     </div>
 
     {% include "components/CleaningPopup.html" %}
+    {% include "components/AddingColumn.html" %}
     <script src="{% static 'js/overview.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 </body>

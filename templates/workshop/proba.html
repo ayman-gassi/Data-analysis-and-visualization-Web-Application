@@ -1,0 +1,64 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet">
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+            rel="stylesheet">
+        <link rel="icon" type="image/x-icon"
+            href="{% static 'images/logo.svg' %}">
+        <title>CortexWorkshop | Probability</title>
+    </head>
+    <body class="bg-gray-100">
+        {% include "components/sidebar.html" %}
+        <div class="ml-20 p-5 h-screen overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h1
+                    class="text-2xl font-semibold text-gray-800">Probability</h1>
+            </div>
+            {% if distributions %}
+            <div class="grid grid-cols-4 gap-4">
+                {% for data in distributions %}
+                <article
+                    class="rounded-lg mt-8 border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-lg sm:p-6">
+                    <span
+                        class="inline-block rounded bg-green-500 p-1 w-32 text-white text-center">
+                        
+                    </span>
+
+                    <a href="{% url 'probability_detail' data.title %}">
+                        <h3 class="mt-0.5 text-lg font-medium text-gray-900">
+                            {{ data.title }}
+                        </h3>
+                    </a>
+
+                    <p class="mt-2 line-clamp-3 text-sm/relaxed text-gray-500">
+                        {{ data.description }}
+                    </p>
+
+                    <a href="{% url 'probability_detail' data.title %}"
+                        class="group mt-4 inline-flex items-center gap-1 text-sm font-medium text-green-500">
+                        Find out more
+
+                        <span aria-hidden="true"
+                            class="block transition-all group-hover:ms-0.5 rtl:rotate-180">
+                            &rarr;
+                        </span>
+                    </a>
+                </article>
+                {% endfor %}
+
+            </div>
+            {% endif %}
+        </div>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+            defer></script>
+    </body>
+</html>

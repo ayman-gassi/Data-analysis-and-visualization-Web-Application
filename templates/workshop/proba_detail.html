@@ -1,0 +1,100 @@
+{% load static %}
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet">
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+            rel="stylesheet">
+        <link rel="icon" type="image/x-icon"
+            href="{% static 'images/logo.svg' %}">
+        <title>CortexWorkshop | {{distribution.title}}</title>
+    </head>
+    <body class="bg-gray-100">
+        {% include "components/sidebar.html" %}
+        <div class="p-5 h-screen  overflow-y-auto">
+            <div class="font-sans p-4">
+                <div class="md:max-w-5xl max-w-lg mx-auto">
+                  <div class="grid md:grid-cols-2 gap-6">
+                    <div class="max-w-sm">
+                      <h2 class="text-gray-600 text-3xl font-semibold mb-4 leading-10">Probability, <br/>{{distribution.title}}.</h2>
+                    </div>
+                    <div class="text-left">
+                      <p class="mb-4 text-sm text-gray-500">{{distribution.definition}}</p>
+                      <form method="POST" class="space-y-4 bg-white p-4 rounded-lg shadow-md" action="{% url 'apply_distribution' distribution.title %}">
+                        {% csrf_token %}
+                        <label class="text-sm font-medium text-gray-700" for="column">Select Column:</label>
+                        <select
+                            name="column"
+                            id="column"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm "
+                        >
+                            {% for column in data_columns %}
+                            <option  value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                        <button
+                            type="submit"
+                            class="w-full px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600 focus:ring focus:ring-green-300 focus:outline-none"
+                        >
+                            Apply
+                        </button>
+                    </form>
+                    
+                    </div>
+                  </div>
+          
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-16">
+                    <div>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="text-green-500 w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ratio"><rect width="12" height="20" x="6" y="2" rx="2"/><rect width="20" height="12" x="2" y="6" rx="2"/></svg>
+                      <div class="mt-4">
+                        <h3 class="text-lg font-bold text-gray-600 mb-2">Description</h3>
+                        <p class="text-gray-500 text-sm">{{distribution.description}}</p>
+                      </div>
+                    </div>
+          
+                    <div>
+                      <svg xmlns="http://www.w3.org/2000/svg"class="text-green-500 w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-help"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                      <div class="mt-4">
+                        <h3 class="text-lg font-bold text-gray-600 mb-2">How Works</h3>
+                        <p class="text-gray-500 text-sm">{{distribution.howto}}</p>
+                      </div>
+                    </div>
+          
+                    <div>
+                      <svg xmlns="http://www.w3.org/2000/svg"class="text-green-500 w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark-check"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 10 2 2 4-4"/></svg>
+                      <div class="mt-4">
+                        <h3 class="text-lg font-bold text-gray-600 mb-2">requirement</h3>
+                        <p class="text-gray-500 text-sm">{{distribution.requirement}}</p>
+                      </div>
+                    </div>
+                  </div>
+                  {% if probability %}
+                  <div  class="w-full bg-green-500 text-white p-4 mt-5 rounded-2xl" >
+                    <p class="text-3xl font-semibold mb-2 leading-10 flex  items-center" ><svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calculator"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg> <label class="ml-2" >Result : </label></p>
+                    <p class="text-xl font-semibold" >{{probability}}</p>
+                  </div>
+                {% endif %}
+                {% if graph %}
+                <div class="w-full bg-green-500 text-white p-4 mt-5 rounded-2xl" >
+                    <p class="text-3xl font-semibold mb-2 leading-10 flex  items-center" >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-spline"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 16c.5-2 1.5-7 4-7 2 0 2 3 4 3 2.5 0 4.5-5 5-7"/></svg>
+                         <label class="ml-2" >Graph : </label>
+                    </p>
+                    <div class="flex justify-center items-center" >
+                    <img src="data:image/png;base64,{{ graph }}" alt="Graph of Simulated Values" />
+                    </div>
+                </div>
+              {% endif %}
+                </div>
+              </div>
+        </div>
+
+        <script  src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    </body>
+</html>
