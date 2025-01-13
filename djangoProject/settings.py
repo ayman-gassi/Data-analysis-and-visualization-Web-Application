@@ -32,6 +32,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'data-analysis-and-visualization-web.onrender.com',
+    
 ]
 
 
@@ -134,6 +135,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TAILWIND_APP_NAME = 'theme'
 
