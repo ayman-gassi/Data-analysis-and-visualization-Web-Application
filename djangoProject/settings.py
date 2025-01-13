@@ -30,10 +30,6 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'data-analysis-and-visualization-web.onrender.com',
 ]
-<<<<<<< HEAD
-
-=======
->>>>>>> b5b94e08ae1b65018c2b4aed5bf69afc746cbf30
 
 
 # Application definition
