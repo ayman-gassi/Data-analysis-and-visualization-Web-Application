@@ -378,7 +378,8 @@ def plot_tool(request):
                 data[selected_columns[0]].plot.box(ax=ax, patch_artist=True, boxprops=dict(facecolor='cyan'))
                 ax.set_title("Box Plot")
             elif tool_name == "Heatmap":
-                sns.heatmap(data.corr(), annot=True, cmap='coolwarm', ax=ax)
+                heatmap_data = data.pivot_table(index=selected_columns[0], columns=selected_columns[1], aggfunc='size', fill_value=0)
+                sns.heatmap(heatmap_data, annot=True, cmap='coolwarm', ax=ax)
                 ax.set_title("Heatmap")
             elif tool_name == "Bar Plot":
                 sns.barplot(x=selected_columns[0], y=selected_columns[1], data=data, palette="bright", ax=ax)
@@ -497,7 +498,7 @@ def console(request):
     })
 
 def probability(request):
-    return render(request, 'workshop/proba.html', {"distributions": probability_distributions})
+    return render(request, 'workshop/proba.html', {"distributions": probability_distributions , "current_page": "probability"})
 
 def probability_detail(request, title):
     data_list = request.session.get('data_list')
@@ -510,21 +511,21 @@ def probability_detail(request, title):
         return redirect('probability')
     
     data = pd.DataFrame(data_list) 
-    string_columns = data.select_dtypes(include='object').columns.tolist() or []
-    numeric_columns = data.select_dtypes(include=['number']).columns.tolist() or []
-    boolean_columns = data.select_dtypes(include='bool').columns.tolist() or []
+    # string_columns = data.select_dtypes(include='object').columns.tolist() or []
+    # numeric_columns = data.select_dtypes(include=['number']).columns.tolist() or []
+    # boolean_columns = data.select_dtypes(include='bool').columns.tolist() or []
     
-    if distribution["data_type"] == "numeric":
-        valid_columns = numeric_columns
-    elif distribution["data_type"] == "string":
-        valid_columns = string_columns
-    elif distribution["data_type"] == "boolean":
-        valid_columns = boolean_columns
-    else:
-        valid_columns = []
+    # if distribution["data_type"] == "numeric":
+    #     valid_columns = numeric_columns
+    # elif distribution["data_type"] == "string":
+    #     valid_columns = string_columns
+    # elif distribution["data_type"] == "boolean":
+    #     valid_columns = boolean_columns
+    # else:
+    #     valid_columns = []
 
-    if not valid_columns:
-        print(request, f"No valid {distribution['data_type']} columns found for {title}.")
+    # if not valid_columns:
+    #     print(request, f"No valid {distribution['data_type']} columns found for {title}.")
 
 
     return render(
@@ -532,9 +533,10 @@ def probability_detail(request, title):
         'workshop/proba_detail.html',
         {
             "distribution": distribution,
-            "data_columns": valid_columns,
+            "data_columns": data.columns.tolist() or [],
             "valid_columns": distribution["data_type"],
             "probability": request.session.get(f"{title}_result"),
+            "current_page": "probability",
             "graph": request.session.get(f"{title}_graph")
         }
     )
@@ -552,41 +554,48 @@ def apply_distribution(request, title):
     
     data = pd.DataFrame(data_list)
     column_name = request.POST.get('column')
-    if not column_name:
-        messages.error(request, "No column selected.")
-        return redirect('probability_detail', title=title)
+    column_args1 = float(request.POST.get('column_args1', 1)) 
+    column_args2 = float(request.POST.get('column_args2', 0.5))
+    if not column_name or not column_args1 or not column_args2:
+        messages.error(request, "Something not selected selected.")
+        return redirect('probability_detail', title=title ,current_page="probability")
     
     try:
         result = None
         simulated = None
+        details = None
 
         if distribution["title"] == "Uniform Distribution":
-            result = float(data[column_name].max() - data[column_name].min())
-            simulated = data[column_name]
-            plot_type = "bar"
+                result = 0
+                simulated = data[column_name]
+                plot_type = "bar"
         elif distribution["title"] == "Binomial Distribution":
-            simulated = np.random.binomial(1, 0.5, size=len(data))
+            simulated = np.random.binomial(column_args1, column_args2, size=len(data[column_name]))
             result = float(simulated.mean())
             plot_type = "bar"
         elif distribution["title"] == "Poisson Distribution":
             lambda_value = data[column_name].mean()
-            simulated = np.random.poisson(lambda_value, size=len(data))
+            details = "lambda = " + str(lambda_value)
+            simulated = np.random.poisson(lambda_value, size=len(data[column_name]))
             result = float(simulated.mean())
             plot_type = "histogram"
         elif distribution["title"] == "Exponential Distribution":
             lambda_value = 1 / data[column_name].mean()
-            simulated = np.random.exponential(lambda_value, size=len(data))
+            details = f"lambda = {lambda_value:.2f}"
+            simulated = np.random.exponential(lambda_value, size=len(data[column_name]))
             result = float(simulated.mean())
             plot_type = "density"
         elif distribution["title"] == "Bernoulli Distribution":
-            simulated = np.random.binomial(1, 0.5, size=len(data))
+            simulated = np.random.binomial(column_args1,column_args2, size=len(data[column_name]))
             result = float(simulated.mean())
+            print(result)
             plot_type = "bar"
         elif distribution["title"] == "Normal Distribution":
             mean = data[column_name].mean()
             std_dev = data[column_name].std()
-            simulated = np.random.normal(mean, std_dev, size=len(data))
-            result = {"mean": float(mean), "std_dev": float(std_dev)}
+            simulated = np.random.normal(mean, std_dev, size=len(data[column_name]))
+            details = "Mean  = {:.2f}, Standard Deviation (σ) = {:.2f}".format(mean, std_dev)
+            result = 0
             plot_type = "density"
         else:
             messages.error(request, "Invalid distribution logic.")
@@ -600,20 +609,21 @@ def apply_distribution(request, title):
         plt.rcParams['figure.facecolor'] = 'white'  
         if plot_type == "bar":
             unique, counts = np.unique(simulated, return_counts=True)
+            plt.title(f'{title}')
             plt.bar(unique, counts, alpha=0.7, color='white', edgecolor='white')
             plt.xlabel('Value')
-            plt.ylabel('Frequency')
         elif plot_type == "histogram":
             plt.hist(simulated, bins=10, alpha=0.7, color='white', edgecolor='white')
+            plt.title(f'{title}  - {details}')
             plt.xlabel('Value')
             plt.ylabel('Frequency')
         elif plot_type == "density":
             density, bins, _ = plt.hist(simulated, bins=10, density=True, alpha=0.7, color='white', edgecolor='white')
+            plt.title(f'{title} - {details}')
             plt.plot(bins[:-1], density, linestyle='--', color='red')
             plt.xlabel('Value')
             plt.ylabel('Density')
         
-        plt.title(f'{title} - Simulated Values')
         plt.grid(axis='y', linestyle='--', alpha=0.7)
 
         buffer = BytesIO()
@@ -631,8 +641,12 @@ def apply_distribution(request, title):
         return redirect('probability_detail', title=title)
     except Exception as e:
         # Error handling
+        session_key = f"{title}_result"
+        request.session[session_key] = "Error while computing the result."
+        session_key2 = f"{title}_graph"
+        request.session[session_key2] = None
         messages.error(request, f"An error occurred: {str(e)}")
-        return redirect('probability_detail', title=title)
+        return redirect('probability_detail', title=title ,current_page="probability")
 
 def logout(request):
     request.session.flush()
