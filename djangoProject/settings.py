@@ -11,9 +11,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
-print(f"Render assigned port: {os.getenv('PORT')}")
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,12 +25,7 @@ SECRET_KEY = 'django-insecure-17x=wrcdl1o*d*&jb=5%1@+%w7b^w^4wy5-r6ogyq%cpisf-g3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'data-analysis-and-visualization-web.onrender.com',
-    
-]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -54,7 +46,6 @@ NPM_BIN_PATH = "/usr/local/bin/npm"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -135,8 +126,6 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 TAILWIND_APP_NAME = 'theme'
 

@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="{% static 'images/logo.svg' %}">
     <title>CortexWorkshop | Workshop</title>
 </head>
@@ -20,12 +21,13 @@
                         Cleaning NaN Values
                     </button>
                 {% endif %} 
-                {% if columns_with_nan|length == 0 %}
+              <!--
+                  {% if columns_with_nan|length == 0 %}
                     <button class="p-2 ml-2 bg-green-500 hover:bg-green-600 rounded-md text-white flex justify-center items-center"  id="openColumnPopup">
                         <svg xmlns="http://www.w3.org/2000/svg"class=" w-5 h-5 mr-2"   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-grid-2x2-plus"><path d="M12 3v17a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1H3"/><path d="M16 19h6"/><path d="M19 22v-6"/></svg>
                         Add Column
                     </button>
-                {% endif %} 
+                {% endif %} -->
              </div>
         </div>
         {% if page_obj %}
@@ -36,15 +38,22 @@
                             {% for header in page_obj.object_list.0.keys %}
                                 <th class="py-3 px-4 text-left">{{ header }}</th>
                             {% endfor %}
+                            <th class="py-3 px-4 text-left" >Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for row in page_obj.object_list %}
-                            <tr class="border-b hover:bg-gray-100">
-                                {% for value in row.values %}
-                                    <td class="py-3 px-4">{{ value }}</td>
-                                {% endfor %}
-                            </tr>
+                        <tr class="border-b hover:bg-gray-100">
+                            {% for value in row.values %}
+                            <td class="py-3 px-4">{{ value }}</td>
+                            {% endfor %}
+                            <td class="py-3 px-4">
+                                <button onclick="openEditModal({{forloop.counter0}})" class="text-white bg-green-400 rounded-md hover:bg-green-600 text-xs py-1 px-3 ">
+                                     <i class="fas fa-pen "></i> Edit
+                                </button>
+                            </td>
+                            
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -70,6 +79,25 @@
                         {% endif %}
                     </div>
                 </nav>
+            </div>
+            <div class="mt-6 bg-white shadow rounded-lg p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Rename Column</h2>
+                <form method="POST" action="{% url 'rename_column' %}" class="flex items-center space-x-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="old_name" class="block text-sm font-medium text-gray-700">Old Column Name</label>
+                        <select name="old_name" id="old_name" class="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            {% for column in column_names %}
+                            <option value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="new_name" class="block text-sm font-medium text-gray-700">New Column Name</label>
+                        <input type="text" required name="new_name" id="new_name" class="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                    </div>
+                    <button type="submit" class="mt-6 px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600">Rename</button>
+                </form>
             </div>
             {% if columns_with_nan|length == 0 %}
             <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 ">
@@ -214,10 +242,35 @@
             <p class="text-gray-600 mt-6">No data available to display.</p>
         {% endif %}
     </div>
+    <div id="editValueModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Edit Value</h2>
+            <form method="POST" action="{% url 'edit_table_value' %}" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="column_name" class="block text-sm font-medium text-gray-700">Column Name</label>
+                    <select name="column_name" id="column_name" class="mt-1 w-full  p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        {% for column in column_names %}
+                        <option value="{{ column }}">{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display: none;">
+                    <input type="number" name="row_index" id="row_index" class="mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <div>
+                    <label for="new_value" class="block text-sm font-medium text-gray-700">New Value</label>
+                    <input type="text" name="new_value" id="new_value" class="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                </div>
+                <button type="submit" class="w-full px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600">Save Changes</button>
+            </form>
+            <button id="closeModalButton" onclick="closeEditModal()" class="mt-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-md shadow hover:bg-gray-400 w-full">Cancel</button>
+        </div>
+    </div>
 
     {% include "components/CleaningPopup.html" %}
     {% include "components/AddingColumn.html" %}
-    <script src="{% static 'js/overview.js' %}"></script>
+    <script src="{% static 'js/overview.js' %}?v={{ STATIC_VERSION }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 </body>
 </html>

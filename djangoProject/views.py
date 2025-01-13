@@ -232,6 +232,66 @@ def overview(request):
         'column_names': column_names,
         'results': results 
     })
+def rename_column(request):
+    data_list = request.session.get('data_list')
+    if not data_list:
+        messages.error(request, "No data available to display.")
+        return redirect('overview')
+
+    if request.method == 'POST':
+        old_name = request.POST.get('old_name')
+        new_name = request.POST.get('new_name')
+
+        if not old_name or not new_name:
+            messages.error(request, "Both old and new column names are required.")
+            return redirect('overview')
+
+        data = pd.DataFrame(data_list)
+
+        if old_name not in data.columns:
+            messages.error(request, "Invalid column name.")
+            return redirect('overview')
+
+        data.rename(columns={old_name: new_name}, inplace=True)
+        request.session['data_list'] = data.to_dict('records')
+        messages.success(request, f"Column '{old_name}' renamed to '{new_name}'.")
+        return redirect('overview')
+
+    return redirect('overview')
+def edit_table_value(request):
+    data_list = request.session.get('data_list')
+    if not data_list:
+        messages.error(request, "No data available to display.")
+        return redirect('overview')
+
+    if request.method == 'POST':
+        column_name = request.POST.get('column_name')
+        row_index = request.POST.get('row_index')
+        new_value = request.POST.get('new_value')
+
+        if not column_name or row_index is None or new_value is None:
+            messages.error(request, "Column name, row index, and new value are required.")
+            return redirect('overview')
+
+        data = pd.DataFrame(data_list)
+
+        if column_name not in data.columns:
+            messages.error(request, "Invalid column name.")
+            return redirect('overview')
+
+        try:
+            row_index = int(row_index)
+            if column_name in data.select_dtypes(include=['number']).columns:
+                new_value = float(new_value)
+            data.at[row_index, column_name] = new_value
+            request.session['data_list'] = data.to_dict('records')
+            messages.success(request, f"Value in row {row_index + 1}, column '{column_name}' updated successfully.")
+        except ValueError:
+            messages.error(request, "Invalid value or row index.")
+        except IndexError:
+            messages.error(request, "Row index out of range.")
+
+    return redirect('overview')
 def calculate_tool(request):
     if request.method == 'POST':
         data_list = request.session.get('data_list')
